@@ -793,8 +793,10 @@ WARN_LOGFILE           =
 INPUT                  = ../inc \
                          ../src \
                          ./pages \
-                         ../plugin/inc \
-                         ../plugin/src
+                         ../plugins/move/inc \
+                         ../plugins/move/src \
+                         ../plugins/set/inc \
+                         ../plugins/set/src
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

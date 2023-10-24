@@ -1,4 +1,4 @@
-__start__: obj __lines_for_space__ interp __plugin__
+__start__: obj __lines_for_space__ interp __plugins__
 	export LD_LIBRARY_PATH="./libs"; ./interp
 
 obj:
@@ -13,8 +13,9 @@ __lines_for_space__:
 	@echo
 
 
-__plugin__:
-	cd plugin; make
+__plugins__:
+	cd plugins/move; make
+	cd plugins/set; make
 
 CPPFLAGS=-Wall -pedantic -std=c++17 -Iinc
 LDFLAGS=-Wall
@@ -36,11 +37,14 @@ clean:
 	rm -f obj/* interp core*
 
 
-clean_plugin:
-	cd plugin; make clean
+clean_plugins:
+	cd plugins/move; make clean
+	cd plugins/set; make clean
 
 cleanall: clean
-	cd plugin; make cleanall
+	cd plugins/move; make cleanall
+	cd plugins/set; make cleanall
+
 	cd dox; make cleanall
 	rm -f libs/*
 	find . -name \*~ -print -exec rm {} \;
@@ -52,8 +56,8 @@ help:
 	@echo "        - (wywolanie bez specyfikacji celu) wymusza"
 	@echo "          kompilacje i uruchomienie programu."
 	@echo "  clean    - usuwa produkty kompilacji oraz program"
-	@echo "  clean_plugin - usuwa plugin"
-	@echo "  cleanall - wykonuje wszystkie operacje dla podcelu clean oraz clean_plugin"
+	@echo "  clean_plugins - usuwa pluginy"
+	@echo "  cleanall - wykonuje wszystkie operacje dla podcelu clean oraz clean_plugins"
 	@echo "             oprocz tego usuwa wszystkie kopie (pliki, ktorych nazwa "
 	@echo "             konczy sie znakiem ~)."
 	@echo "  help  - wyswietla niniejszy komunikat"

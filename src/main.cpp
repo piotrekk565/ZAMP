@@ -8,7 +8,7 @@ using namespace std;
 
 int main()
 {
-  void *pLibHnd_Move = dlopen("libInterp4Move.so",RTLD_LAZY);
+  void *pLibHnd_Move = dlopen("libInterp4Set.so",RTLD_LAZY);
   AbstractInterp4Command *(*pCreateCmd_Move)(void);
   void *pFun;
 
