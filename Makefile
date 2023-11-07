@@ -16,6 +16,8 @@ __lines_for_space__:
 __plugins__:
 	cd plugins/move; make
 	cd plugins/set; make
+	cd plugins/pause; make
+	cd plugins/rotate; make
 
 CPPFLAGS=-Wall -pedantic -std=c++17 -Iinc
 LDFLAGS=-Wall
@@ -40,10 +42,14 @@ clean:
 clean_plugins:
 	cd plugins/move; make clean
 	cd plugins/set; make clean
+	cd plugins/pause; make clean
+	cd plugins/rotate; make clean
 
 cleanall: clean
 	cd plugins/move; make cleanall
 	cd plugins/set; make cleanall
+	cd plugins/pause; make cleanall
+	cd plugins/rotate; make cleanall
 
 	cd dox; make cleanall
 	rm -f libs/*
