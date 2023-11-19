@@ -1,5 +1,5 @@
 __start__: obj __lines_for_space__ interp __plugins__
-	export LD_LIBRARY_PATH="./libs"; ./interp
+	export LD_LIBRARY_PATH="./libs"; ./interp "opis_dzialan.cmd" "config/config.xml"
 
 obj:
 	mkdir obj
@@ -25,10 +25,13 @@ LDFLAGS=-Wall
 
 
 
-interp: obj/main.o
-	g++ ${LDFLAGS} -o interp  obj/main.o -ldl
+interp: obj/xmlinterp.o obj/main.o
+	g++ ${LDFLAGS} -o interp  obj/xmlinterp.o obj/main.o -lxerces-c -ldl
 
-obj/main.o: src/main.cpp inc/AbstractInterp4Command.hh inc/AbstractScene.hh\
+obj/xmlinterp.o: src/xmlinterp.cpp inc/xmlinterp.hh inc/Config.hh
+	g++ -c ${CPPFLAGS} -o obj/xmlinterp.o src/xmlinterp.cpp
+
+obj/main.o: src/main.cpp inc/xmlinterp.hh inc/Config.hh inc/Commands.hh inc/AbstractInterp4Command.hh inc/AbstractScene.hh\
             inc/AbstractComChannel.hh
 	g++ -c ${CPPFLAGS} -o obj/main.o src/main.cpp
 

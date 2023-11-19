@@ -18,6 +18,8 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <algorithm>
+#include <iterator>
 
 
 /*!
@@ -77,6 +79,16 @@ namespace geom {
      * Wszystkim współrzędnym przypisana jest wartość 0.
      */
    Vector() { for (Type &Val : _Coord) Val = 0; }
+
+   /*!
+     * \brief Współrzędne wektora są zerowane.
+     *
+     * Inicjalizuje wektor podanymi wartosciami
+     *  \param  initValues - wartosci inicializujace wektor
+     */
+   Vector(Type initValues[Size]) {
+    std::copy(initValues, initValues + Size, _Coord);
+   }
 
     /*!
      * \brief Dostęp do wybranej składowej wektora.
@@ -431,6 +443,23 @@ std::ostream & operator << ( std::ostream &OStrm, const geom::Vector<Type,Size> 
    OStrm << ")";
    return OStrm;
 }
+
+
+/*!
+ * \brief Wypisuje współrzędne wektora z strumienia wejściowego.
+ *
+ *  Wypisuje współrzędne wektora z strumienia wejściowego.
+ *  \param IStrm - strumień wejściowu, z którego wpisywane są współrzędne wektora,
+ *  \param V - wektor, do ktorego współrzędne mają zostać wypisane.
+ */
+template<typename Type, unsigned int Size>
+inline
+std::istream & operator>> ( std::istream &IStrm, geom::Vector<Type,Size> &V)
+{
+  IStrm >> V[0] >> V[1] >> V[2];
+  return IStrm;
+}
+
 
 
 
