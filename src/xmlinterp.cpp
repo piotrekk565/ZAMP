@@ -129,17 +129,17 @@ void XMLInterp4Config::ProcessCubeAttrs(const xercesc::Attributes  &rAttrs)
 
  Object object{}; 
  for(XMLSize_t i = 0; i < rAttrs.getLength(); i++) {
-    char* nodeName = xercesc::XMLString::transcode(rAttrs.getQName(i));
+    char* attrName = xercesc::XMLString::transcode(rAttrs.getQName(i));
 
-    if (accessor.find(nodeName) != accessor.end()) {
-      char* nodeValue = xercesc::XMLString::transcode(rAttrs.getValue(i));
-      accessor.at(nodeName)(object, nodeValue);
-      xercesc::XMLString::release(&nodeValue);
+    if (accessor.find(attrName) != accessor.end()) {
+      char* attrValue = xercesc::XMLString::transcode(rAttrs.getValue(i));
+      accessor.at(attrName)(object, attrValue);
+      xercesc::XMLString::release(&attrValue);
     } else {
-      cout << "Znaleziono niezdefiniowany atrybut: " << nodeName << endl;
+      cout << "Znaleziono niezdefiniowany atrybut: " << attrName << endl;
     }
 
-    xercesc::XMLString::release(&nodeName);
+    xercesc::XMLString::release(&attrName);
  }
  this->config.objects.push_back(object);
 }

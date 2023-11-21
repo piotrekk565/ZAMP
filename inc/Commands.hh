@@ -6,7 +6,7 @@
 
 struct Command {
   std::string name{};
-  std::string command{};
+  std::string args{};
   static std::optional<Command> parse(char* line);
 };
 
@@ -23,8 +23,10 @@ std::optional<Command> Command::parse(char* cLine) {
     return std::nullopt;
   } else {
     std::string name = sLine.substr(0, seperator_position);
-    std::string command = sLine.substr(seperator_position, sLine.length());
-    return std::optional<Command>{Command{name: name, command: command}};
+    name.erase(name.find_last_not_of(" ") + 1);
+    name.erase(0,name.find_first_not_of(" "));
+    std::string args = sLine.substr(seperator_position, sLine.length());
+    return std::optional<Command>{Command{name: name, args: args}};
   }
 }
 

@@ -28,7 +28,7 @@ AbstractInterp4Command* CreateCmd(void)
 /*!
  *
  */
-Interp4Set::Interp4Set(): objectName("nazwa_obiektu")
+Interp4Set::Interp4Set()
 {}
 
 
@@ -40,7 +40,7 @@ void Interp4Set::PrintCmd() const
   /*
    *  Tu trzeba napisać odpowiednio zmodyfikować kod poniżej.
    */
-  using ostream_for_set::operator<<;
+  using proper_ostream::operator<<;
   cout << GetCmdName() << " " << this->objectName << " " << this->position << " " << this->angle << endl;
 }
 
@@ -74,10 +74,8 @@ bool Interp4Set::ExecCmd( AbstractScene      &rScn,
  */
 bool Interp4Set::ReadParams(std::istream& Strm_CmdsList)
 {
-  /*
-   *  Tu trzeba napisać odpowiedni kod.
-   */
-  return true;
+  Strm_CmdsList >> this->objectName >> this->position >> this->angle;
+  return Strm_CmdsList.good();
 }
 
 

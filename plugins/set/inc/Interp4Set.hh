@@ -8,21 +8,6 @@
 
 #include "AbstractInterp4Command.hh"
 
- namespace ostream_for_set {
-  //class Vector3D: public geom::Vector<double,3> {};
-
-  template<typename Type, unsigned int Size>
-  inline
-  std::ostream & operator << ( std::ostream &OStrm, const geom::Vector<Type,Size>  &V)
-  {
-    OStrm << V[0];
-    for (unsigned int Ind = 1; Ind < Size; ++Ind) {
-      OStrm << " " << V[Ind];
-    }
-    return OStrm;
-  }
- }
-
 /*!
  * \file
  * \brief Definicja klasy Interp4Set

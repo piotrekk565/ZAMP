@@ -14,6 +14,7 @@
 #include "Config.hh"
 #include "xmlinterp.hh"
 #include <memory>
+#include <map>
 
 #define LINE_SIZE 500
 
@@ -25,10 +26,30 @@ class LibInterface{
   AbstractInterp4Command *(*_pCreateCmd)(void) = nullptr;
 
   public:
-  ~LibInterface(){ if(_pLibHnd) dlclose(_pLibHnd);}
+  /*LibInterface();
+  LibInterface(const LibInterface &other) = delete;
+  */
+ LibInterface(){};
+ LibInterface(const LibInterface &other) {
+  this->_pLibHnd = other._pLibHnd;
+  this->_pCreateCmd = other._pCreateCmd;
+ }
+ LibInterface(LibInterface &&other) {
+    this->_pLibHnd = other._pLibHnd;
+    this->_pCreateCmd = other._pCreateCmd;
+    other._pLibHnd = nullptr;
+    other._pCreateCmd = nullptr;
+  }
+  ~LibInterface(){ 
+    cout << "Closing lib: " << _pLibHnd << endl;
+    if(_pLibHnd) dlclose(_pLibHnd);
+    }
 
   bool Init(const char *sFilename);
-  AbstractInterp4Command *CreateCmd(){assert(_pCreateCmd); return _pCreateCmd();}
+  unique_ptr<AbstractInterp4Command> CreateCmd() const {
+    assert(_pCreateCmd); 
+    return unique_ptr<AbstractInterp4Command>(_pCreateCmd());
+  }
 };
 
 bool LibInterface::Init(const char *sFileName){
@@ -172,6 +193,27 @@ optional<Config> ProgramInput::readConfig() const {
 }
 
 
+struct Plugins: map<string, LibInterface> {
+  static optional<Plugins> loadFromConfig(const Config &config) {
+    Plugins plugins;
+    cout << "Ladowanie pluginow: " << endl;
+    for(const auto &plugin : config.plugins) {
+      LibInterface lib;
+
+      cout << "Zaladowano plugin: " << plugin.name << endl;
+      if(!lib.Init(plugin.name.c_str())) {
+        cout << "Nie udalo sie zaladowac pluginu " << plugin.name << endl;
+        return nullopt;
+      };
+
+      string command_name = string(lib.CreateCmd()->GetCmdName());
+      cout << "Plugin: " << plugin.name << " obsluguje komende: " << command_name << endl;
+      plugins.emplace( std::make_pair(command_name, std::move(lib)));
+    }
+    return optional<Plugins>{std::move(plugins)};
+  }
+};
+
 int start(ProgramInput input) {
   auto retCommands = input.readCommands();
   if(!retCommands.has_value()) {
@@ -187,71 +229,34 @@ int start(ProgramInput input) {
   }
   Config config = retConfig.value();
 
+  auto retPlugins = Plugins::loadFromConfig(config);
+  if(!retPlugins.has_value()) {
+    return 1;
+  }
+  Plugins plugins = retPlugins.value();
 
+  cout << endl << "Obsluga komend" << endl;
+  for(const auto& command : commands.commands) {
+    if(plugins.find(command.name) == plugins.end()) {
+      cout << "Brak pluginu obslugujacego typ komendy: " << command.name << endl;
+      return 1;
+    }
 
-  LibInterface MoveLibInterf;
+    stringstream line_args(command.args);
+    stringstream args;
+    string segment;
+    while(getline(line_args, segment, ' ')) {
+      args << segment << endl;
+    }
 
-  if(!MoveLibInterf.Init("libs/libInterp4Move.so")) return 1;
-
-  AbstractInterp4Command *pCmd = MoveLibInterf.CreateCmd();
-
-  cout << endl;
-  cout << pCmd->GetCmdName() << endl;
-  cout << endl;
-  pCmd->PrintSyntax();
-  cout << endl;
-  pCmd->PrintCmd();
-  cout << endl;
-  
-  delete pCmd;
-
-  LibInterface SetLibInterf;
-
-  if(!SetLibInterf.Init("libs/libInterp4Set.so")) return 1;
-
-  pCmd = SetLibInterf.CreateCmd();
-
-  cout << endl;
-  cout << pCmd->GetCmdName() << endl;
-  cout << endl;
-  pCmd->PrintSyntax();
-  cout << endl;
-  pCmd->PrintCmd();
-  cout << endl;
-  
-  delete pCmd;
-
-  LibInterface PauseLibInterf;
-
-  if(!PauseLibInterf.Init("libs/libInterp4Pause.so")) return 1;
-
-  pCmd = PauseLibInterf.CreateCmd();
-
-  cout << endl;
-  cout << pCmd->GetCmdName() << endl;
-  cout << endl;
-  pCmd->PrintSyntax();
-  cout << endl;
-  pCmd->PrintCmd();
-  cout << endl;
-  
-  delete pCmd;
-
-  LibInterface RotateLibInterf;
-
-  if(!RotateLibInterf.Init("libs/libInterp4Rotate.so")) return 1;
-
-  pCmd = RotateLibInterf.CreateCmd();
-
-  cout << endl;
-  cout << pCmd->GetCmdName() << endl;
-  cout << endl;
-  pCmd->PrintSyntax();
-  cout << endl;
-  pCmd->PrintCmd();
-  cout << endl;
-  
-  delete pCmd;
+    const LibInterface &lib = plugins.at(command.name);
+    auto cmd = lib.CreateCmd();
+    if(cmd->ReadParams(args)) {
+      cmd->PrintCmd();
+    } else {
+      cout << "Blad na czytaniu ze strumienia" << endl;
+    }
+  }
 }
 
 int main(int argc, char *argv[]) {

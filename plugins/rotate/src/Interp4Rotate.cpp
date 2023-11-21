@@ -28,7 +28,7 @@ AbstractInterp4Command* CreateCmd(void)
 /*!
  *
  */
-Interp4Rotate::Interp4Rotate(): _Szybkosc_katowa(0)
+Interp4Rotate::Interp4Rotate()
 {}
 
 
@@ -40,7 +40,7 @@ void Interp4Rotate::PrintCmd() const
   /*
    *  Tu trzeba napisać odpowiednio zmodyfikować kod poniżej.
    */
-  cout << GetCmdName() << " " << _Szybkosc_katowa << " x 10  20" << endl;
+  cout << GetCmdName() << " " << this->objectName << " " << this->axis << " " << this->angleSpeed << " " << this->rotationAngle << endl;
 }
 
 
@@ -73,10 +73,8 @@ bool Interp4Rotate::ExecCmd( AbstractScene      &rScn,
  */
 bool Interp4Rotate::ReadParams(std::istream& Strm_CmdsList)
 {
-  /*
-   *  Tu trzeba napisać odpowiedni kod.
-   */
-  return true;
+  Strm_CmdsList >> this->objectName >> this->axis >> this->angleSpeed >> this->rotationAngle;
+  return Strm_CmdsList.good();
 }
 
 

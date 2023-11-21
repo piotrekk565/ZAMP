@@ -26,7 +26,7 @@ class Interp4Pause: public AbstractInterp4Command {
    *  do przechowywania wartości parametrów danego polecenia.
    *  Ponieżej zdefiniowane jest tylko jedno pole jako przykład.
    */
-  double  _Czas_pauzy;
+  long long pauseTime{};
  public:
   /*!
    * \brief
