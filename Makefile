@@ -25,13 +25,19 @@ LDFLAGS=-Wall
 
 
 
-interp: obj/xmlinterp.o obj/main.o
-	g++ ${LDFLAGS} -o interp  obj/xmlinterp.o obj/main.o -lxerces-c -ldl
+interp: obj/config.o obj/klient.o obj/xmlinterp.o obj/main.o
+	g++ ${LDFLAGS} -o interp obj/config.o obj/klient.o obj/xmlinterp.o obj/main.o -lxerces-c -ldl
+
+obj/klient.o: src/klient.cpp inc/Klient.hh inc/Port.hh
+	g++ -c ${CPPFLAGS} -o obj/klient.o src/klient.cpp
+
+obj/config.o: src/config.cpp inc/Config.hh inc/Vector3D.hh
+	g++ -c ${CPPFLAGS} -o obj/config.o src/config.cpp
 
 obj/xmlinterp.o: src/xmlinterp.cpp inc/xmlinterp.hh inc/Config.hh
 	g++ -c ${CPPFLAGS} -o obj/xmlinterp.o src/xmlinterp.cpp
 
-obj/main.o: src/main.cpp inc/xmlinterp.hh inc/Config.hh inc/Commands.hh inc/AbstractInterp4Command.hh inc/AbstractScene.hh\
+obj/main.o: src/main.cpp inc/xmlinterp.hh inc/Config.hh inc/Commands.hh inc/AbstractInterp4Command.hh inc/Klient.hh inc/Scene.hh inc/Port.hh inc/AbstractScene.hh\
             inc/AbstractComChannel.hh
 	g++ -c ${CPPFLAGS} -o obj/main.o src/main.cpp
 

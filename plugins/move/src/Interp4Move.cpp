@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Interp4Move.hh"
+#include <unistd.h>
 
 
 using std::cout;
@@ -56,14 +57,25 @@ const char* Interp4Move::GetCmdName() const
 /*!
  *
  */
-bool Interp4Move::ExecCmd( AbstractScene      &rScn, 
-                           const char         *sMobObjName,
-			   AbstractComChannel &rComChann
-			 )
+bool Interp4Move::ExecCmd(AbstractScene &rScn)
 {
-  /*
-   *  Tu trzeba napisać odpowiedni kod.
-   */
+  auto optional_obj = rScn.FindMobileObj(this->objectName.c_str());
+  if(!optional_obj.has_value()) {
+    return false;
+  }
+  auto obj = optional_obj.value();
+
+  int steps = 10*std::floor(this->pathLength/this->speed); //Krok co 100ms
+  for (int i = 0; i < steps; i++)
+  {
+    Vector3D position = obj->GetPositoin_m();
+
+    position[0] += this->speed / static_cast<double>(steps);
+    obj->SetPosition_m(position);
+    rScn.update(obj);
+    usleep(100*1000);
+  }
+
   return true;
 }
 

@@ -2,6 +2,7 @@
 #define ABSTRACTSCENE_HH
 
 
+#include <optional>
 #include "AbstractMobileObj.hh"
 
 /*!
@@ -31,7 +32,7 @@
 	*  \return Jeśli obiekt zostanie znaleziony, to zwracany jest wskaźnik
 	*          na niego. W przypadku przeciwnym zwracany jest wskaźnik \p nullptr.
         */
-        virtual AbstractMobileObj*  FindMobileObj(const char *sName) = 0;
+        virtual std::optional<AbstractMobileObj*>  FindMobileObj(const char *sName) = 0;
        /*!
         * \brief Dodaje do sceny nowy obiekt.
 	*
@@ -40,6 +41,8 @@
 	*  \param[in] pMobObj - wskaźnik na istniejący obiekt.
         */
         virtual void AddMobileObj(AbstractMobileObj *pMobObj) = 0;
+
+        virtual void update(AbstractMobileObj *pMobObj) = 0;
   };
 
 #endif

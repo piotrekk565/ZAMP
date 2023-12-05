@@ -26,4 +26,17 @@ namespace proper_ostream {
     }
 }
 
+namespace server_ostream {
+    template<typename Type, unsigned int Size>
+    inline
+    std::ostream & operator << ( std::ostream &OStrm, const geom::Vector<Type,Size>  &V)
+    {
+        OStrm << V[0];
+        for (unsigned int Ind = 1; Ind < Size; ++Ind) {
+            OStrm << "," << V[Ind];
+        }
+        return OStrm;
+    }
+}
+
 #endif

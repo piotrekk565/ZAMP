@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Interp4Rotate.hh"
+#include <unistd.h>
 
 
 using std::cout;
@@ -56,14 +57,30 @@ const char* Interp4Rotate::GetCmdName() const
 /*!
  *
  */
-bool Interp4Rotate::ExecCmd( AbstractScene      &rScn, 
-                           const char         *sMobObjName,
-			   AbstractComChannel &rComChann
-			 )
+bool Interp4Rotate::ExecCmd(AbstractScene &rScn)
 {
-  /*
-   *  Tu trzeba napisać odpowiedni kod.
-   */
+  auto optional_obj = rScn.FindMobileObj(this->objectName.c_str());
+  if(!optional_obj.has_value()) {
+    return false;
+  }
+  auto obj = optional_obj.value();
+
+  int steps = 10*std::floor(this->rotationAngle/this->angleSpeed); //Krok co 100ms
+  for (int i = 0; i < steps; i++)
+  {
+    Vector3D position = obj->GetPositoin_m();
+    double angle_change = this->angleSpeed / static_cast<double>(steps);
+    if( !this->axis.compare("X") ) {
+      obj->SetAng_Roll_deg(obj->GetAng_Roll_deg() + angle_change);
+    } else if( !this->axis.compare("X") ) {
+      obj->SetAng_Pitch_deg(obj->GetAng_Pitch_deg() + angle_change);
+    } else {
+      obj->SetAng_Yaw_deg(obj->GetAng_Yaw_deg() + angle_change);
+    }
+    rScn.update(obj);
+    usleep(100*1000);
+  }
+
   return true;
 }
 

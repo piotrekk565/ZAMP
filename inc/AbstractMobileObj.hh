@@ -100,7 +100,7 @@
         *  Udostępnia nazwę identyfikującą obiekt.
         *  \return Nazwa obiektu.
         */
-        virtual const std::string & GetName() const = 0;
+        virtual const std::string_view GetName() const = 0;
     };
 
 

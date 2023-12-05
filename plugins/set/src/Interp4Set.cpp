@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Interp4Set.hh"
+#include <unistd.h>
 
 
 using std::cout;
@@ -57,14 +58,20 @@ const char* Interp4Set::GetCmdName() const
 /*!
  *
  */
-bool Interp4Set::ExecCmd( AbstractScene      &rScn, 
-                           const char         *sMobObjName,
-			   AbstractComChannel &rComChann
-			 )
+bool Interp4Set::ExecCmd(AbstractScene &rScn)
 {
-  /*
-   *  Tu trzeba napisać odpowiedni kod.
-   */
+  auto optional_obj = rScn.FindMobileObj(this->objectName.c_str());
+  if(!optional_obj.has_value()) {
+    return false;
+  }
+  auto obj = optional_obj.value();
+  obj->SetPosition_m(this->position);
+  obj->SetAng_Roll_deg(this->angle[0]);
+  obj->SetAng_Pitch_deg(this->angle[1]);
+  obj->SetAng_Yaw_deg(this->angle[2]);
+  rScn.update(obj);
+  usleep(250000);
+
   return true;
 }
 

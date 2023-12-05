@@ -47,14 +47,10 @@
       *
       * Wykonuje polecenie oraz wizualizuje jego realizację.
       * \param[in,out]  rScn - scena zawierającą obiekty mobilne,
-      * \param[in]      sMobObjName - wskaźnik na nazwę lokalizującą i identyfikującą obiekt,
-      * \param[in,out]  rComChann - kanał komunikacyjny z serwerem graficznym.
       * \retval true - operacja powiodła się,
       * \retval false - w przypadku przeciwnym.
       */
-     virtual bool ExecCmd(AbstractScene      &rScn, 
-                          const char         *sMobObjName,
-                          AbstractComChannel &rComChann) = 0;
+     virtual bool ExecCmd(AbstractScene      &rScn) = 0;
      /*!
       * \brief Czyta wartości parametrów danego polecenia.
       *

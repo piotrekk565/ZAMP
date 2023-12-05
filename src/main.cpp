@@ -15,6 +15,9 @@
 #include "xmlinterp.hh"
 #include <memory>
 #include <map>
+#include "Scene.hh"
+#include "Port.hh"
+#include "Klient.hh"
 
 #define LINE_SIZE 500
 
@@ -41,9 +44,11 @@ class LibInterface{
     other._pCreateCmd = nullptr;
   }
   ~LibInterface(){ 
-    cout << "Closing lib: " << _pLibHnd << endl;
-    if(_pLibHnd) dlclose(_pLibHnd);
+    if(_pLibHnd) {
+      dlclose(_pLibHnd);
+      cout << "Closing lib: " << _pLibHnd << endl;
     }
+  }
 
   bool Init(const char *sFilename);
   unique_ptr<AbstractInterp4Command> CreateCmd() const {
@@ -110,20 +115,30 @@ optional<Commands> ProgramInput::readCommands() const {
   istringstream iss{};
   if(ExecPreprocesor(this->commands, iss)) {
     char Line[LINE_SIZE];
-    vector<Command> commands{};
+    vector<ParalelGroup> groups{};
+    ParalelGroup buff{};
 
     while(!iss.eof()){
       iss.getline(Line, LINE_SIZE);
       cout << "Reading line: " << Line << endl;
       auto ret = Command::parse(Line);
       if( ret.has_value() ) {
-        commands.push_back(ret.value());
+        buff.commands.push_back(ret.value());
       } else {
-        cout << "Nastepujaca linia posiada nieprawidlowe polecenie: " << Line << endl;
+        std::string_view view{Line};
+        if(view.find("Begin_Parallel_Actions") != std::string::npos) {
+          buff = ParalelGroup{};
+        } else if(view.find("End_Parallel_Actions") != std::string::npos) {
+          if(!buff.commands.empty()) {
+            groups.push_back(buff);
+          }
+        } else {
+          cout << "Nastepujaca linia posiada nieprawidlowe polecenie: " << Line << endl;
+        }
       }
     }
     
-    return optional<Commands>{Commands{commands: commands}};
+    return optional<Commands>{Commands{groups: groups}};
   }
 
 
@@ -235,26 +250,51 @@ int start(ProgramInput input) {
   }
   Plugins plugins = retPlugins.value();
 
-  cout << endl << "Obsluga komend" << endl;
-  for(const auto& command : commands.commands) {
-    if(plugins.find(command.name) == plugins.end()) {
-      cout << "Brak pluginu obslugujacego typ komendy: " << command.name << endl;
-      return 1;
+  cout << "Port: " << PORT << endl;
+  int                 socket;
+  if (!OpenConnection(socket)) return 1;
+
+  Scene  scene{config.objects};
+  scene.connect(socket);
+  scene.init();
+
+  //cout << endl << "Obsluga komend" << endl;
+  cout << "Group count: " << commands.groups.size() << endl;
+  for(const auto& group : commands.groups) {
+    cout << "Group size: " << group.commands.size() << endl;
+    std::vector<std::thread> threads{};
+
+    for(const auto& command : group.commands) {
+      if(plugins.find(command.name) == plugins.end()) {
+        cout << "Brak pluginu obslugujacego typ komendy: " << command.name << endl;
+        return 1;
+      }
+
+      stringstream line_args(command.args);
+      stringstream args;
+      string segment;
+      while(getline(line_args, segment, ' ')) {
+        args << segment << endl;
+      }
+    
+      const LibInterface &lib = plugins.at(command.name);
+      auto cmd = lib.CreateCmd();
+      if(cmd->ReadParams(args)) {
+        auto runnable = [cmd = move(cmd), &scene, command](){
+          if(!cmd->ExecCmd(static_cast<AbstractScene&>(scene))) {
+            cout << "Blad podczas wykonywania komendy: " << command.name << " z argumentami: " << command.args << endl;
+          }
+        };
+        //thread exec_thread(std::move(runnable));
+        threads.emplace_back(std::move(runnable));
+        
+      } else {
+        cout << "Blad na czytaniu ze strumienia" << endl;
+      }
     }
 
-    stringstream line_args(command.args);
-    stringstream args;
-    string segment;
-    while(getline(line_args, segment, ' ')) {
-      args << segment << endl;
-    }
-
-    const LibInterface &lib = plugins.at(command.name);
-    auto cmd = lib.CreateCmd();
-    if(cmd->ReadParams(args)) {
-      cmd->PrintCmd();
-    } else {
-      cout << "Blad na czytaniu ze strumienia" << endl;
+    for(auto& thread : threads) {
+      thread.join();
     }
   }
 }

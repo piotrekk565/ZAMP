@@ -10,9 +10,13 @@ struct Command {
   static std::optional<Command> parse(char* line);
 };
 
+struct ParalelGroup {
+  std::vector<Command> commands{};
+};
+
 
 struct Commands {
-  std::vector<Command> commands{};
+  std::vector<ParalelGroup> groups{};
 };
 
 std::optional<Command> Command::parse(char* cLine) {
